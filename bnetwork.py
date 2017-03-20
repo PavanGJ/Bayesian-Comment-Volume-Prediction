@@ -8,6 +8,7 @@
 import os
 import csv
 import numpy as np
+from pgmpy.models import BayesianModel
 
 class Data:
 	
@@ -57,6 +58,7 @@ class Data:
 		#print self.data
 		
 		self.initialize_vars()
+		self.model = BayesianModel()
 	
 	def initialize_vars(self):
 
@@ -82,19 +84,27 @@ class Data:
 		self.postSat = self.data[self.postSatIdx]
 		self.target = self.data[self.targetIdx]
 
-		postPubDays = [self.postSun, self.postMon, self.postTue, self.postWed, self.postThu, self.postFri, self.postSat]
+		#postPubDays = [self.postSun, self.postMon, self.postTue, self.postWed, self.postThu, self.postFri, self.postSat]
+		postPubDays = np.zeros((7, len(self.postSun)))
+		postPubDays[0] = self.postSun
+		postPubDays[1] = self.postMon
+		postPubDays[2] = self.postTue
+		postPubDays[3] = self.postWed
+		postPubDays[4] = self.postThu
+		postPubDays[5] = self.postFri
+		postPubDays[6] = self.postSat
+		self.postDay = self.reduceDimension(postPubDays)
 		
-		self.reduceDimension(postPubDays)
 		
-		#print self.pagePopularity
 	
 	def reduceDimension(self, lst):
 		
-		postDays = np.zeros(len(lst[0]))
-		#for i in range(0,len(lst[0])):
-			
+		postDay = np.zeros(len(lst[0]))
+		for i in range(0,len(lst[0])):
+			postDay[i] = np.argmax(lst[:,i])
+		
+		return postDay
 
-	
 
 	def getCondProb(self, child, parents, Y):
 		
@@ -140,8 +150,19 @@ class Data:
 				
 	def define_structure(self):
 		
-		#self.root = ret_val
-		pass
+		self.model.add_edges_from([('pageCategory','pagePopularity'),('pagePopularity', 'pageTalkingAbt')])
+		self.model.add_edge([('pageTalkingAbt', 'Comments')])
+		self.model.add_edge([('postPromotion','Comments')])
+		self.model.add_edge([('postLength', 'Comments')])
+		self.model.add_edges_from([('postLength', 'postShareCt'), ('postShareCt','Comments')])
+		self.model.add_edges_from([('baseDay','cc2'),('cc2', 'cc3')])
+		self.model_add_edge([('cc3', 'Comments')])
+		self.model.add_edge([('pageCheckins','Comments')])
+		self.model.add_edges_from([('baseTime','cc1'), ('cc1', 'cc2')])
+		self.model.add_edges_from([('postDay','cc4'),('cc4', 'Comments')])
+		self.model.add_edge([('hLocal','Comments')])
+		
+		
 	
 	def dimensionality_reduction(self):
 		pass
