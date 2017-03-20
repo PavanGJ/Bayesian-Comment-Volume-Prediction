@@ -9,6 +9,7 @@ import os
 import csv
 import numpy as np
 from pgmpy.models import BayesianModel
+from pgmpy.inference import Mplp
 
 class Data:
 	
@@ -43,19 +44,16 @@ class Data:
 		self.initialize_indexes()
 		self.root = 0
 		lst = []	
-		#self.pos_dict = {'pagePopularity':0, 'pageCheckins':1, 'pageTalkingAbout':2, 'pageCategory':3, 'baseTime':34, 'postLength':35, 'postShareCount':36, 'postStatusPromotion':37, 'postDay':[39, 40, 41, 42, 43, 44, 45], 'comment':53}
-
-		self.category = {}
-		#self.pos = [0, 1, 2, 3, 34, 35, 36, 37, [39, 40, 41, 42, 43, 44, 45], 53]	
-		for f in fname:
-			#print "andi ",f
-			with open(f) as fil:
-				reader = csv.DictReader(fil)
-				for row in reader:
-					lst.append(row)		
 		
+		for f in fname:
+			with open(f) as fil:
+				
+				reader = csv.reader(fil, delimiter=',', quoting=csv.QUOTE_NONE)
+				for row in reader:
+					
+					lst.append(row)		
+					
 		self.data = np.array(lst)		
-		#print self.data
 		
 		self.initialize_vars()
 		self.model = BayesianModel()
@@ -75,17 +73,18 @@ class Data:
 		self.postShareCt = self.data[self.postShareCtIdx]
 		self.postPromotion = self.data[self.postPromotionIdx]
 		self.hLocal = self.data[self.hLocalIdx]
-		self.postSun = self.data[self.postSunIdx]
-		self.postMon = self.data[self.postMonIdx]
-		self.postTue = self.data[self.postTueIdx]
-		self.postWed = self.data[self.postWedIdx]
-		self.postThu = self.data[self.postThuIdx]
-		self.postFri = self.data[self.postFriIdx]
-		self.postSat = self.data[self.postSatIdx]
+		self.postSun = self.data[:,self.postSunIdx]
+		self.postMon = self.data[:,self.postMonIdx]
+		self.postTue = self.data[:,self.postTueIdx]
+		self.postWed = self.data[:,self.postWedIdx]
+		self.postThu = self.data[:,self.postThuIdx]
+		self.postFri = self.data[:,self.postFriIdx]
+		self.postSat = self.data[:,self.postSatIdx]
 		self.target = self.data[self.targetIdx]
-
-		#postPubDays = [self.postSun, self.postMon, self.postTue, self.postWed, self.postThu, self.postFri, self.postSat]
+		
+		
 		postPubDays = np.zeros((7, len(self.postSun)))
+		
 		postPubDays[0] = self.postSun
 		postPubDays[1] = self.postMon
 		postPubDays[2] = self.postTue
@@ -99,12 +98,11 @@ class Data:
 	
 	def reduceDimension(self, lst):
 		
-		postDay = np.zeros(len(lst[0]))
+		postDay = np.zeros((len(lst[0]), 1))
 		for i in range(0,len(lst[0])):
 			postDay[i] = np.argmax(lst[:,i])
 		
 		return postDay
-
 
 	def getCondProb(self, child, parents, Y):
 		
@@ -151,17 +149,16 @@ class Data:
 	def define_structure(self):
 		
 		self.model.add_edges_from([('pageCategory','pagePopularity'),('pagePopularity', 'pageTalkingAbt')])
-		self.model.add_edge([('pageTalkingAbt', 'Comments')])
-		self.model.add_edge([('postPromotion','Comments')])
-		self.model.add_edge([('postLength', 'Comments')])
+		self.model.add_edge('pageTalkingAbt', 'Comments')
+		self.model.add_edge('postPromotion','Comments')
+		self.model.add_edge('postLength', 'Comments')
 		self.model.add_edges_from([('postLength', 'postShareCt'), ('postShareCt','Comments')])
 		self.model.add_edges_from([('baseDay','cc2'),('cc2', 'cc3')])
-		self.model_add_edge([('cc3', 'Comments')])
-		self.model.add_edge([('pageCheckins','Comments')])
+		self.model.add_edge('cc3', 'Comments')
+		self.model.add_edge('pageCheckins','Comments')
 		self.model.add_edges_from([('baseTime','cc1'), ('cc1', 'cc2')])
 		self.model.add_edges_from([('postDay','cc4'),('cc4', 'Comments')])
-		self.model.add_edge([('hLocal','Comments')])
-		
+		self.model.add_edge('hLocal','Comments')
 		
 	
 	def dimensionality_reduction(self):
@@ -177,9 +174,15 @@ if __name__=="__main__":
 	dirname = "Training/"
 	for files in os.listdir(dirname):
 		if(files.endswith(".csv")):
+			
 			fname.append(dirname + files)
 	
 	ob = Data(fname)
+	ob.define_structure()
+	
+	infr = Mplp(ob.model)
+	print infr 
+	
 	#print fname
 	
 	
