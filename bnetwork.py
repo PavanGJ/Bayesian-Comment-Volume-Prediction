@@ -2,12 +2,17 @@
 #
 #	Date 		Name		Description
 #
-#	01-Mar-2017     Anuag Dixit	Initial Draft
+#	01-Mar-2017     Anurag Dixit	Initial Draft
+#	19-Mar-2017		Anurag Dixit	Added API for conditional probabilities
+#	20-Mar-2017  	Anurag Dixit	Bug fix for parsing of data correctly
+#	20-Mar-2017		Anurag Dixit	Added changes for Bayesian Model incorporation and Data
+#	20-Mar-2017		Anurag Dixit	Added file read for query perform and commented the MPLP
 #
 ################################################################################
 import os
 import csv
 import numpy as np
+import pandas as pd
 from pgmpy.models import BayesianModel
 from pgmpy.inference import Mplp
 
@@ -23,7 +28,8 @@ class Data:
 		self.cc1Idx = 29
 		self.cc2Idx = 30
 		self.cc3Idx = 31
-		self.cc4Idx = 33
+		self.cc4Idx = 32
+		self.cc5Idx = 33
 		self.baseTimeIdx = 34
 		self.postLengthIdx = 35
 		self.postShareCtIdx = 36
@@ -41,6 +47,9 @@ class Data:
 
 	def __init__(self, fname):
 
+		self.consideredVars = [0, 1 , 2, 3, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 53]
+
+		self.NUM_VAR = 15
 		self.initialize_indexes()
 		self.root = 0
 		lst = []	
@@ -68,6 +77,7 @@ class Data:
 		self.cc2 = self.data[self.cc2Idx]
 		self.cc3 = self.data[self.cc3Idx]
 		self.cc4 = self.data[self.cc4Idx]
+		self.cc5 = self.data[self.cc5Idx]
 		self.baseTime = self.data[self.baseTimeIdx]
 		self.postLength = self.data[self.postLengthIdx]
 		self.postShareCt = self.data[self.postShareCtIdx]
@@ -94,8 +104,24 @@ class Data:
 		postPubDays[6] = self.postSat
 		self.postDay = self.reduceDimension(postPubDays)
 		
+		self.data[:,self.postSunIdx] = self.postDay[:,0]
 		
-	
+		completeList = []
+		for i in range(0, 54):
+			completeList.append(i)
+		trun = np.setdiff1d(completeList, self.consideredVars)
+		
+		# Need to reverse as the col indexes will change on deletion of columns
+		trun = trun[::-1]
+
+		print "Filtering out variables : ", trun
+		for i in range(0, len(trun)):
+			
+			self.data = np.delete(self.data, trun[i], 1)
+		
+		
+		
+		
 	def reduceDimension(self, lst):
 		
 		postDay = np.zeros((len(lst[0]), 1))
@@ -161,11 +187,25 @@ class Data:
 		self.model.add_edge('hLocal','Comments')
 		
 	
-	def dimensionality_reduction(self):
-		pass
 	
 	def infer(self):
-		pass
+		#infr = Mplp(self.model)
+		f = open('query.txt', 'r')
+		lines = f.readlines()
+		for i in lines:
+			lst = i.split(",")
+			queryType = lst[0]
+			if(queryType == 0):
+				child = lst[1]
+				parents = lst[2:]
+			
+			#print infr.query(child, parents)
+		
+		#TODO: Add handling of multiple types of queries defined in query file
+		
+		
+		
+		
 
 
 if __name__=="__main__":
@@ -174,15 +214,14 @@ if __name__=="__main__":
 	dirname = "Training/"
 	for files in os.listdir(dirname):
 		if(files.endswith(".csv")):
-			
+						
 			fname.append(dirname + files)
 	
 	ob = Data(fname)
 	ob.define_structure()
 	
-	infr = Mplp(ob.model)
-	print infr 
-	
-	#print fname
-	
+	dat = pd.DataFrame(ob.data, columns = ['pagePopularity', 'pageCheckins', 'pageTalkingAbt',  'pageCategory', 
+	'cc1', 'cc2', 'cc3', 'cc4', 'cc5','baseTime', 'postLength','postShareCt', 'postPromotion', 'hLocal', 'postDay' , 'Comments'])
+	#ob.model.fit(dat)
+	ob.infer()
 	
