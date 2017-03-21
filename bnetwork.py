@@ -8,6 +8,7 @@
 #	20-Mar-2017		Anurag Dixit	Added changes for Bayesian Model incorporation and Data
 #	20-Mar-2017		Anurag Dixit	Added file read for query perform and commented the MPLP
 #	21-Mar-2017		Pavan Joshi		Depreciated reduceDimensions function to utilize numpy functions
+#	21-Mar-2017		Pavan Joshi		Added API to handle nodes in the network.
 #
 ################################################################################
 import os
@@ -16,6 +17,169 @@ import numpy as np
 import pandas as pd
 from pgmpy.models import BayesianModel
 from pgmpy.inference import Mplp
+from pgmpy.factors.continuous import LinearGaussianCPD
+from pgmpy.factors.discrete import TabularCPD
+
+class Node:
+
+	def __init__(self,nodeName,parents = [],continuous = False):
+		"""
+		Parameters
+		----------
+		nodeName: The name of the node in the bayesian network
+
+		parents	: The parents of the node.
+				  Defaut value = []. Signifies no parents
+
+		continuous: Signifies whether the node contains continuous values
+				  False - Discrete
+				  True - Continuous
+				  Default value = False(Discrete)
+
+		Return
+		------
+		None
+
+		Examples
+		--------
+
+		>>> x = Node('X')
+		>>> y = Node('Y',parents=['X'])
+		>>> z = Node('Z',parents=['X','Y'],continuous=True)
+
+		"""
+		self.nodeName = nodeName
+		self.parents = np.array(parents)
+		self.continuous = continuous
+		self.cpd = None
+
+	def add_parent(self,parent):
+		self.parents = np.append(self.parents,parent)
+
+	def add_cpd(self,node_values,parent_values):
+		"""
+		Parameters
+		----------
+
+		node_values		: Values that the node takes.
+						  This is the discrete values or a variance in case
+						  of continuous distribution.
+
+		parent_values	: The parent values
+						  Takes a list of number of discrete parent values.
+						  Or it takes the beta vector which specifies the
+						  mean of the node as a function of the parent nodes.
+						  (Includes beta_0, the constant term which is specified
+						  at the beginning)
+
+		Return
+		------
+		None
+
+		Examples
+		--------
+
+		>>> x = Node('X')
+		>>> x.add_cpd([[0.3, 0.05, 0.9, 0.5], [0.4, 0.25, 0.08, 0.3],
+		 									[0.3, 0.7, 0.02, 0.2]], [2,2])
+		CPD added successfully
+
+		>>> y = Node('Y',continuous=True)
+		>>> y.add_cpd(9.6 , [0.2,-2, 3, 7])
+		CPD added successfully
+
+		"""
+		if self.continuous:
+			if(parent_values.shape[0]!=(self.parents.shape[0]+1)):
+				print "Error: Dimension Mismatch"
+				return
+			self.cpd = LinearGaussianCPD(
+							self.nodeName,
+							parent_values,
+							node_values,
+							self.parents)
+		else:
+			variable_card = np.array(node_values).shape[0]
+			if(variable_card==1):
+				variable_card = np.array(node_values).shape[1]
+			if(len(parent_values) != 0 and
+					np.prod(parent_values)!=np.array(node_values).shape[1]):
+				print "Error: Dimension Mismatch"
+				return
+			self.cpd = TabularCPD(
+							self.nodeName,
+							variable_card,
+							node_values,
+							self.parents,
+							parent_values
+							)
+		print('CPD added successfully')
+
+	def get_cpd(self):
+		"""
+		Parameters
+		----------
+		None
+
+		Return
+		------
+		Conditional Probability Distribution
+
+		Examples
+		--------
+
+		>>> x = Node('X',parents=['Y','Z'])
+		>>> x.add_cpd([[0.3, 0.05, 0.9, 0.5], [0.4, 0.25, 0.08, 0.3],
+		 									[0.3, 0.7, 0.02, 0.2]], [2,2])
+		>>> x.get_cpd()
+
+
+		"""
+		return self.cpd
+
+	def get_edges(self):
+		"""
+		Parameters
+		----------
+		None
+
+		Return
+		------
+		List of edges in the form (parent,child)
+
+		Examples
+		--------
+
+		>>> x = Node('X',parents=['Y','Z'])
+		>>> x.get_edges()
+		[('Y','X'),('Z','X')]
+
+		"""
+		edges = []
+		for parent in self.parents:
+			edges.append((parent,self.nodeName))
+		return edges
+
+	def get_name(self):
+		"""
+		Parameters
+		----------
+		None
+
+		Return
+		------
+		String Name
+
+		Examples
+		--------
+
+		>>> g = Node('Grade',parents=['Difficulty','Intelligence'])
+		>>> g.get_name()
+		'Grade'
+
+		"""
+		return self.nodeName
+
 
 class Data:
 
@@ -108,8 +272,6 @@ class Data:
 
 		#self.postDay = self.reduceDimension(postPubDays)
 
-		print self.postDay
-
 		self.data[:,self.postSunIdx] = self.postDay[:,0]
 
 		completeList = []
@@ -183,7 +345,11 @@ class Data:
 
 		return pow(e, logval)
 
-
+################################################################################
+#
+#	Setting this function up for changes according to the new Node class
+#
+################################################################################
 	def define_structure(self):
 
 		self.model.add_edges_from([('pageCategory','pagePopularity'),('pagePopularity', 'pageTalkingAbt')])
