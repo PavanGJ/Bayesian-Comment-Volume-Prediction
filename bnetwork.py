@@ -9,6 +9,7 @@
 #	20-Mar-2017		Anurag Dixit	Added file read for query perform and commented the MPLP
 #	21-Mar-2017		Pavan Joshi		Depreciated reduceDimensions function to utilize numpy functions
 #	21-Mar-2017		Pavan Joshi		Added API to handle nodes in the network.
+#	22-Mar-2017	Anurag Dixit		Added Linear Regression Code for adding cpds for continuos variables
 #
 ################################################################################
 import os
@@ -19,8 +20,9 @@ from pgmpy.models import BayesianModel
 from pgmpy.inference import Mplp
 from pgmpy.factors.continuous import LinearGaussianCPD
 from pgmpy.factors.discrete import TabularCPD
+from sklearn import linear_model
 
-class Node:
+class Node(Data):
 
 	def __init__(self,nodeName,parents = [],continuous = False):
 		"""
@@ -181,6 +183,42 @@ class Node:
 		return self.nodeName
 
 
+class LinearReg(Data):
+
+	def __init__(self, fname):
+		Data.__init__(fname)
+		
+
+	def get_val(self, nodeNames):
+		"""
+		Parameters:
+				nodeNames is a string for the variable name
+
+		Returns:
+				values for such node names
+		"""
+		ret = np.zeros((len(nodeNames), len(self.dict[nodeNames[0]][0])))
+		ret = np.zeros(self.dict[nodeNames].shape)
+		for i in range(0, len(nodeNames)):
+			ret[:,i] = self.dict[nodeNames[i]]
+		
+		return ret
+			
+			
+	def linear_reg(self, nodeName, parents):
+		
+
+		X = self.get_val(parents)
+		Y = self.get_val(nodeName)
+		
+		reg = linear_model.LinearRegression()
+		reg.fit(X, Y)
+		return reg.coef_
+
+
+
+
+
 class Data:
 
 	def initialize_indexes(self):
@@ -287,6 +325,8 @@ class Data:
 
 			self.data = np.delete(self.data, trun[i], 1)
 
+		self.dict = {'pagePopularity':self.pagePopularity, 'pageCheckins':self.pageCheckins, 'pageTalkingAbt':self.pageTalkingAbt, 'pageCategory':self.pageCategory, 'cc1':self.cc1, 'cc2':self.cc2, 'cc3':self.cc3, 'cc4':self.cc4, 'cc5':self.cc5, 'baseTime':self.baseTime, 'postLength':self.postLength, 'postShareCt':self.postShareCt, 'postPromotion':self.postPromotion, 'hLocal':self.hLocal, 'postDay':self.postDay, 'comments':self.target }
+
 
 ################################################################################
 #
@@ -383,9 +423,6 @@ class Data:
 
 
 
-
-
-
 if __name__=="__main__":
 
 	fname = []
@@ -402,3 +439,9 @@ if __name__=="__main__":
 	'cc1', 'cc2', 'cc3', 'cc4', 'cc5','baseTime', 'postLength','postShareCt', 'postPromotion', 'hLocal', 'postDay' , 'Comments'])
 	#ob.model.fit(dat)
 	ob.infer()
+
+
+	"""
+	lr = LinearReg(fname)
+	print lr.linear_reg(ob.pagePopularity, postLength)
+	"""
