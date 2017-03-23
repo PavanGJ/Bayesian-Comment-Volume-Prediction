@@ -42,12 +42,16 @@ class Structure:
 		if vertex not in self.structure['V']:
 			raise ValueError('Vertex %s not in the network'%vertex)
 		children = [edge[1] for edge in self.structure['E'] if edge[0]==vertex]
+		if len(children) == 0:
+			children = None
 		return children
 
 	def get_parents(self,vertex):
 		if vertex not in self.structure['V']:
 			raise ValueError('Vertex %s not in the network'%vertex)
 		parents = [edge[0] for edge in self.structure['E'] if edge[1]==vertex]
+		if len(parents) == 0:
+			parents = None
 		return parents
 
 	def get_structure(self):

@@ -16,14 +16,14 @@ import os
 import csv
 import numpy as np
 import pandas as pd
+
+from Structure import Structure
 from pgmpy.models import BayesianModel
 from pgmpy.inference import Mplp
 from pgmpy.factors.continuous import LinearGaussianCPD
 from pgmpy.models import LinearGaussianBayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
 from sklearn import linear_model
-
-
 
 class Data:
 
@@ -55,6 +55,7 @@ class Data:
 
 	def __init__(self, fname):
 
+		self.model = Sturcture()
 		self.consideredVars = [0, 1 , 2, 3, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 53]
 
 		self.NUM_VAR = 15
@@ -73,7 +74,7 @@ class Data:
 		self.data = np.array(lst)
 
 		self.initialize_vars()
-		self.model = LinearGaussianBayesianNetwork()
+#		self.model = LinearGaussianBayesianNetwork()
 
 	def initialize_vars(self):
 
@@ -184,6 +185,23 @@ class Data:
 ################################################################################
 	def define_structure(self):
 
+		self.model.add_edge(['pageCategory','pagePopularity'],types=['d','lgandd'])
+		self.model.add_edge(['pagePopularity','pageTalkingAbt'],types=['lgandd','lg'])
+		self.model.add_edge(['pageTalkingAbout','Comments'],types=['lg','lgandd'])
+		self.model.add_edge(['postPromotion','Comments'],types=['d','lgandd'])
+		self.model.add_edge(['postLength','postShareCt'],types=['lg','lg'])
+		self.model.add_edge(['postLength','Comments'],types=['lg','lgandd'])
+		self.model.add_edge(['postShareCt','Comments'],types=['lg','lgandd'])
+		self.model.add_edge(['baseTime','cc1'],types=['lg','lg'])
+		self.model.add_edge(['baseDay','cc2'],types=['d','lgandd'])
+		self.model.add_edge(['cc1','cc2'],types=['lg','lgandd'])
+		self.model.add_edge(['cc2','cc3'],types=['lgandd','lg'])
+		self.model.add_edge(['cc3','Comments'],types=['lg','lgandd'])
+		self.model.add_edge(['pageCheckins','Comments'],types=['lg','lgandd'])
+		self.model.add_edge(['postDay','cc4'],types=['d','lgandd'])
+		self.model.add_edge(['cc4','Comments'],types=['lgandd','lgandd'])
+
+"""
 		self.model.add_edges_from([('pageCategory','pagePopularity'),('pagePopularity', 'pageTalkingAbt')])
 		self.model.add_edge('pageTalkingAbt', 'Comments')
 		self.model.add_edge('postPromotion','Comments')
@@ -195,20 +213,8 @@ class Data:
 		self.model.add_edges_from([('baseTime','cc1'), ('cc1', 'cc2')])
 		self.model.add_edges_from([('postDay','cc4'),('cc4', 'Comments')])
 		self.model.add_edge('hLocal','Comments')
+"""
 
-		
-	
-	
-		#####################################################################
-		#
-		#
-		#	Construct the json dictionary
-		#
-		
-		
-		
-		
-		
 
 	def infer(self):
 		#infr = Mplp(self.model)
@@ -225,9 +231,6 @@ class Data:
 
 		#TODO: Add handling of multiple types of queries defined in query file
 
-
-	
-		
 
 
 class Node(Data):
@@ -323,7 +326,7 @@ class Node(Data):
 							self.parents,
 							parent_values
 							)
-		
+
 		print('CPD added successfully')
 
 	def get_cpd(self):
@@ -391,11 +394,6 @@ class Node(Data):
 		"""
 		return self.nodeName
 
-
-
-
-	
-
 if __name__=="__main__":
 
 	fname = []
@@ -412,3 +410,8 @@ if __name__=="__main__":
 	#ob.model.fit(dat)
 	ob.infer()
 
+
+	"""
+	lr = LinearReg(fname)
+	print lr.linear_reg(ob.pagePopularity, postLength)
+	"""

@@ -22,6 +22,7 @@ class StructureTest:
         print("Children of Intelligence:",self.network.get_children("Intelligence"))
         print("Children of Difficulty:",self.network.get_children("Difficulty"))
         print("Children of Grade:",self.network.get_children("Grade"))
+        print("Children of Letter:",self.network.get_children("Letter"))
 
     def test_get_vertex_type(self):
         print("Type of vertex-Intelligence:",self.network.get_vertex_type("Intelligence"))
