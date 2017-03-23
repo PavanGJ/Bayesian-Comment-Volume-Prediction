@@ -197,11 +197,6 @@ class Data:
 		self.model.add_edge('hLocal','Comments')
 
 		
-		# Adding cpds
-		cpd = []
-		beta_vec = LinearReg().linear_regr(self.dictVal['pagePopularity'], self.dictVal['pageCategory'])
-		cpd.append(LinearGaussianCPD)
-	
 	
 	
 		#####################################################################
@@ -211,47 +206,6 @@ class Data:
 		#
 		
 		
-		
-		vals_pageCategory, counts_pageCategory = numpy.unique(self.pageCategory, return_counts=True)
-		
-		val_PC = []
-		var_PC = []
-		mB_PC = []
-		mS_PC = []
-		for i in vals_pageCategory:
-			mask_pC = np.zeros(len(self.data[0,:]), dtype = bool)
-			mask_pC[self.pageCategoryIdx] = True
-			val_pC = [self.pageCategory[:,self.pageCategoryIdx] == i][:,mask_pC]
-			var_pC = np.var(val_pC)
-			mean_pC = np.mean(val_pC)
-			val_PC.append("[%s]" % i)
-			var_PC.append(var_pC)
-			mB_PC.append(mean_pC)
-				
-		
-		
-		mydict = {"Vdata": {"pageCategory":  {"type":"discrete", 	"parents": null, 			 "children":["pagePopularity"], "numoutcomes": len(vals_pageCategory), "cprob": [x/len(vals_pageCategory) for x in counts_pageCategory]}},
-						   {"pagePopularity":{"type":"lgandd", 		"parents":["pageCategory"],  "children":["pageTalkingAbt"]}, "hybcprob": }
-		
-		}
-		
-			
-			{ "p": {"parents": ["Difficulty", "Intelligence"], 
-					  "type": "lgandd", 
-					  "children": ["Letter"],
-					  "hybcprob": {"['high']": {"variance": 5, "mean_base": 20, "mean_scal": [1]},
-					               "['low']":  {"variance": 10,"mean_base": 10, "mean_scal": [1]}}
-					 }, 
-           "Intelligence": {"numoutcomes": 2, 
-							"cprob": [0.9, 0.1], 
-							"parents": null, 
-							"vals": ["low", "high"], 
-							"type": "discrete", 
-							"children": ["SAT", "Grade"]}, 
-		   
-		   "Difficulty": {"mean_base": 50, "mean_scal": [], "parents": null, "variance": 18,"type": "lg", 
-						"children": ["Grade"]}, 
-        
 		
 		
 		
