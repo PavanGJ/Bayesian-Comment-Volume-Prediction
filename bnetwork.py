@@ -131,7 +131,8 @@ class Data:
 
 			self.data = np.delete(self.data, trun[i], 1)
 
-		self.dict = {'pagePopularity':self.pagePopularity, 'pageCheckins':self.pageCheckins, 'pageTalkingAbt':self.pageTalkingAbt, 'pageCategory':self.pageCategory, 'cc1':self.cc1, 'cc2':self.cc2, 'cc3':self.cc3, 'cc4':self.cc4, 'cc5':self.cc5, 'baseTime':self.baseTime, 'postLength':self.postLength, 'postShareCt':self.postShareCt, 'postPromotion':self.postPromotion, 'hLocal':self.hLocal, 'postDay':self.postDay, 'comments':self.target }
+		self.dictVal = {'pagePopularity':self.pagePopularity, 'pageCheckins':self.pageCheckins, 'pageTalkingAbt':self.pageTalkingAbt, 'pageCategory':self.pageCategory, 'cc1':self.cc1, 'cc2':self.cc2, 'cc3':self.cc3, 'cc4':self.cc4, 'cc5':self.cc5, 'baseTime':self.baseTime, 'postLength':self.postLength, 'postShareCt':self.postShareCt, 'postPromotion':self.postPromotion, 'hLocal':self.hLocal, 'postDay':self.postDay, 'comments':self.target }
+		self.dictIdx = {'pagePopularity':self.pagePopularityIdx, 'pageCheckins':self.pageCheckinsIdx, 'pageTalkingAbt':self.pageTalkingAbtIdx, 'pageCategory':self.pageCategoryIdx, 'cc1':self.cc1Idx, 'cc2':self.cc2Idx, 'cc3':self.cc3Idx, 'cc4':self.cc4Idx, 'cc5':self.cc5Idx, 'baseTime':self.baseTimeIdx, 'postLength':self.postLengthIdx, 'postShareCt':self.postShareCtIdx, 'postPromotion':self.postPromotionIdx, 'hLocal':self.hLocalIdx, 'postDay':self.postDayIdx, 'comments':self.targetIdx }
 
 
 
@@ -196,6 +197,64 @@ class Data:
 		self.model.add_edge('hLocal','Comments')
 
 		
+		# Adding cpds
+		cpd = []
+		beta_vec = LinearReg().linear_regr(self.dictVal['pagePopularity'], self.dictVal['pageCategory'])
+		cpd.append(LinearGaussianCPD)
+	
+	
+	
+		#####################################################################
+		#
+		#
+		#	Construct the json dictionary
+		#
+		
+		
+		
+		vals_pageCategory, counts_pageCategory = numpy.unique(self.pageCategory, return_counts=True)
+		
+		val_PC = []
+		var_PC = []
+		mB_PC = []
+		mS_PC = []
+		for i in vals_pageCategory:
+			mask_pC = np.zeros(len(self.data[0,:]), dtype = bool)
+			mask_pC[self.pageCategoryIdx] = True
+			val_pC = [self.pageCategory[:,self.pageCategoryIdx] == i][:,mask_pC]
+			var_pC = np.var(val_pC)
+			mean_pC = np.mean(val_pC)
+			val_PC.append("[%s]" % i)
+			var_PC.append(var_pC)
+			mB_PC.append(mean_pC)
+				
+		
+		
+		mydict = {"Vdata": {"pageCategory":  {"type":"discrete", 	"parents": null, 			 "children":["pagePopularity"], "numoutcomes": len(vals_pageCategory), "cprob": [x/len(vals_pageCategory) for x in counts_pageCategory]}},
+						   {"pagePopularity":{"type":"lgandd", 		"parents":["pageCategory"],  "children":["pageTalkingAbt"]}, "hybcprob": }
+		
+		}
+		
+			
+			{ "p": {"parents": ["Difficulty", "Intelligence"], 
+					  "type": "lgandd", 
+					  "children": ["Letter"],
+					  "hybcprob": {"['high']": {"variance": 5, "mean_base": 20, "mean_scal": [1]},
+					               "['low']":  {"variance": 10,"mean_base": 10, "mean_scal": [1]}}
+					 }, 
+           "Intelligence": {"numoutcomes": 2, 
+							"cprob": [0.9, 0.1], 
+							"parents": null, 
+							"vals": ["low", "high"], 
+							"type": "discrete", 
+							"children": ["SAT", "Grade"]}, 
+		   
+		   "Difficulty": {"mean_base": 50, "mean_scal": [], "parents": null, "variance": 18,"type": "lg", 
+						"children": ["Grade"]}, 
+        
+		
+		
+		
 
 	def infer(self):
 		#infr = Mplp(self.model)
@@ -212,6 +271,9 @@ class Data:
 
 		#TODO: Add handling of multiple types of queries defined in query file
 
+
+	
+		
 
 
 class Node(Data):
@@ -376,46 +438,9 @@ class Node(Data):
 		return self.nodeName
 
 
-class LinearReg(Data):
-
-	def __init__(self, fname):
-		Data.__init__(fname)
-		
-
-	def get_val(self, nodeNames):
-		"""
-		Parameters:
-				nodeNames is a string for the variable name
-
-		Returns:
-				values for such node names
-		"""
-		ret = np.zeros((len(nodeNames), len(self.dict[nodeNames[0]][0])))
-		ret = np.zeros(self.dict[nodeNames].shape)
-		for i in range(0, len(nodeNames)):
-			ret[:,i] = self.dict[nodeNames[i]]
-		
-		return ret
-			
-			
-	def linear_reg(self, nodeName, parents):
-		
-
-		X = self.get_val(parents)
-		Y = self.get_val(nodeName)
-		
-		reg = linear_model.LinearRegression()
-		reg.fit(X, Y)
-		return reg.coef_
-		
-	def linear_regr(self, nodeValue, parents):
-		
-		reg = linear_model.LinearRegression()
-		reg.fit(nodeValue, parents)
-		return reg.coef_
 
 
-
+	
 
 if __name__=="__main__":
 
@@ -433,8 +458,3 @@ if __name__=="__main__":
 	#ob.model.fit(dat)
 	ob.infer()
 
-
-	"""
-	lr = LinearReg(fname)
-	print lr.linear_reg(ob.pagePopularity, postLength)
-	"""
