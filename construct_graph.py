@@ -3,9 +3,9 @@ from __future__ import division
 #
 #
 #
-#	Date 		Name 		Description
-#	24-Mar-2017	Anurag Dixit	Added the file for creating the data for hybridBayesianNetwork Model
-#
+#	Date 				Name	 		Description
+#	24-Mar-2017			Anurag Dixit	Added the file for creating the data for hybridBayesianNetwork Model
+#	24-Mar-2017			Anurag Dixit	Bug fix (mean_scale for Comments)
 #
 #
 ############################################################################################################
@@ -27,7 +27,7 @@ class Ndata(Data):
 		
 		reg = linear_model.LinearRegression()
 		reg.fit(parents, nodeValue)
-		return reg.coef_
+		return reg.coef_, reg.intercept_
 
 	
 		
@@ -43,8 +43,6 @@ class Ndata(Data):
 		
 		if(val_type == "lgandd"):
 			
-			
-			#print "parents",parents
 			discrete_parents = []
 			for i in parents:
 				#print i,"type",st.get_vertex_type(i)
@@ -52,7 +50,7 @@ class Ndata(Data):
 					discrete_parents.append(i)
 					
 			
-			#discrete_parents = [x for x in pts where type == "discrete"]
+			
 			print "Discrete parents", discrete_parents
 			disc_parents = self.dictVal[discrete_parents[0]]
 			disc_index = self.dictIdx[discrete_parents[0]]
@@ -64,17 +62,13 @@ class Ndata(Data):
 			variance = []
 			mean_base = []
 			mean_scale = []
-			#ret = {}
-			#print "values", values
+			
+			
 			for i in values:
-				mask = np.zeros(len(self.data[0,:]), dtype = bool)
-				mask[var_index] = True
 				
 				filter_val = self.data[:, var_index][self.data[:, disc_index] == i]
 				
-				#print "filtered_val", filter_val
 				a = np.array(filter_val).astype(np.float)
-				#print "a", a, "type", type(a),a.shape, np.mean(a), a.shape
 				
 				mean_base.append(np.mean(a))
 				vals.append("[%s]" % i)
@@ -91,12 +85,13 @@ class Ndata(Data):
 		
 			
 			ret = {"type":val_type, "parents":parents, "children":children, "hybcprob": d}
-			#print ret
+			
 			return ret
 
 		elif(val_type == "d"):
 			
-			
+			if parents==None:
+				parents = 'null'
 			values = np.unique(node_val)
 			count = len(values)
 			total = len(self.data[:,0])
@@ -117,12 +112,12 @@ class Ndata(Data):
 			node_val = node_val.reshape(len(node_val), 1).astype(np.float)
 			
 			if(parents == None):
-				mean_base.append(np.mean(node_val))
+				mean_base.append(np.mean(node_val).tolist())
 				mean_scal.append(1)
 				parents = 'null'
 				
 			else:
-				#print "parents", parents
+				
 				v = self.dictVal[parents[0]]
 				parent = v.reshape(len(v),1)
 				
@@ -130,17 +125,11 @@ class Ndata(Data):
 					val = self.dictVal[parents[i]]
 					parent = np.concatenate((parent, val.reshape(len(val), 1)), axis=1).astype(np.float)
 				
-				#print node_val.shape, parent.shape
-				#print "parents", parent.T, "node ", node_val.T
 				
-				beta = self.linear_regr(node_val, parent)
+				w, beta_0 = self.linear_regr(node_val, parent)
 				
-				if(len(beta)==1):
-					mean_scal = beta[0]
-					mean_base = beta[0]
-				else:	
-					mean_scal = beta[1:]
-					mean_base = beta[0]
+				mean_base = beta_0.tolist()[0]
+				mean_scal = [x for x in w.tolist()]
 				
 			ret = {"type":val_type, "parents":parents, "children":children, "mean_base": mean_base, "mean_scal":[x for x in mean_scal]}
 			

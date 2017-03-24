@@ -1,9 +1,9 @@
 ##########################################################################################################
 #
 #
-#	Date		Name 		Description
-#	24-Mar-2017	Anurag Dixit	Added the file for multiple inheritance across multiple classes
-#
+#	Date			Name	 		Description
+#	24-Mar-2017		Anurag Dixit	Added the file for multiple inheritance across multiple classes
+#	24-Mar-2017 	Anurag Dixit	Changes for logs
 #
 #
 ########################################################################################################
@@ -95,6 +95,7 @@ class Data:
 		self.postLength = self.data[:,self.postLengthIdx]
 		self.postShareCt = self.data[:,self.postShareCtIdx]
 		self.postPromotion = self.data[:,self.postPromotionIdx]
+		
 		self.hLocal = self.data[:,self.hLocalIdx]
 		self.postSun = self.data[:,self.postSunIdx]
 		self.postMon = self.data[:,self.postMonIdx]
@@ -160,6 +161,7 @@ class Data:
 		# Need to reverse as the col indexes will change on deletion of columns
 		trun = trun[::-1]
 
+		print "Dimensionality Reduction Stage ... "
 		print "Filtering out variables : ", trun
 		for i in range(0, len(trun)):
 

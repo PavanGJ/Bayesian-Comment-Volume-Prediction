@@ -1,6 +1,6 @@
 ################################################################################
 #
-#	Date 		Name		Description
+#	Date 			Name			Description
 #
 #	01-Mar-2017     Anurag Dixit	Initial Draft
 #	19-Mar-2017		Anurag Dixit	Added API for conditional probabilities
@@ -9,9 +9,9 @@
 #	20-Mar-2017		Anurag Dixit	Added file read for query perform and commented the MPLP
 #	21-Mar-2017		Pavan Joshi		Depreciated reduceDimensions function to utilize numpy functions
 #	21-Mar-2017		Pavan Joshi		Added API to handle nodes in the network.
-#	22-Mar-2017	Anurag Dixit		Added Linear Regression Code for adding cpds for continuos variables
-#	24-Mar-2017     Anurag Dixit            Changes done for hybrid bayesian network model compatible data generation
-#
+#	22-Mar-2017		Anurag Dixit	Added Linear Regression Code for adding cpds for continuos variables
+#	24-Mar-2017     Anurag Dixit    Changes done for hybrid bayesian network model compatible data generation
+#	24-Mar-2017     Anurag Dixit	Changes for Linear Regression intercept
 #
 ################################################################################
 import os
@@ -203,6 +203,8 @@ class BNetwork(Ndata):
 		
 	def define_structure(self):
 
+		print "Constructing the Hybrid Bayesian Network Model graph ... "
+
 		self.model.add_edge(['pageCategory','pagePopularity'],types=['d','lgandd'])
 		self.model.add_edge(['pagePopularity','pageTalkingAbout'],types=['lgandd','lg'])
 		self.model.add_edge(['pageTalkingAbout','Comments'],types=['lg','lgandd'])
@@ -220,15 +222,13 @@ class BNetwork(Ndata):
 		self.model.add_edge(['cc4','Comments'],types=['lgandd','lgandd'])
 
 
-		#g = self.ndata#Ndata(self.fname)
-		
-		#print self.model.get_parents("pagePopularity")
 		
 		DISCRETE = "d"
 		LINEARGAUSSIAN = "lg"
 		LGANDDISCRETE = "lgandd"
 		
-		#print self.get_value("pageCategory", DISCRETE)
+		
+		print "Calculating CPDs compatible to Hybrid Bayesian Network Model for Hybrid Data ... "
 		
 		dat = {"pageCategory": self.get_value("pageCategory", DISCRETE), 
 		"pagePopularity": self.get_value("pagePopularity", LGANDDISCRETE), 
@@ -249,7 +249,9 @@ class BNetwork(Ndata):
 		
 		node_data = {"Vdata": dat}
 		
-		print "dict: ",node_data
+		
+		
+		print "Data : ",node_data
 		
 	
 	def infer(self):
