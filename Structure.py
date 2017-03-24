@@ -3,10 +3,13 @@
 #	Date 			Name		Description
 #
 #	23-Mar-2017     Pavan Joshi	Created Data Structure to handle the Graph
-#					structure to be fed to libpgm
+#								structure to be fed to libpgm
+#	23-Mar-2017		Pavan Joshi	Minor changes to return json formatted dict in
+#								getter functions
 #
 #
 ################################################################################
+import json
 
 class Structure:
 	structure = dict()
@@ -55,7 +58,10 @@ class Structure:
 		return parents
 
 	def get_structure(self):
-		return self.structure
+		skeleton = dict()
+		skeleton['V'] = self.structure['V']
+		skeleton['E'] = self.structure['E']
+		return json.dumps(skeleton,indent = 2)
 
 	def get_vertex_type(self,vertex):
 		if vertex not in self.structure['V']:
