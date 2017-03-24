@@ -10,6 +10,8 @@
 #	21-Mar-2017		Pavan Joshi		Depreciated reduceDimensions function to utilize numpy functions
 #	21-Mar-2017		Pavan Joshi		Added API to handle nodes in the network.
 #	22-Mar-2017	Anurag Dixit		Added Linear Regression Code for adding cpds for continuos variables
+#	24-Mar-2017     Anurag Dixit            Changes done for hybrid bayesian network model compatible data generation
+#
 #
 ################################################################################
 import os
@@ -18,6 +20,7 @@ import numpy as np
 import pandas as pd
 
 from Structure import Structure
+from Data import Data
 from pgmpy.models import BayesianModel
 from pgmpy.inference import Mplp
 from pgmpy.factors.continuous import LinearGaussianCPD
@@ -25,217 +28,21 @@ from pgmpy.models import LinearGaussianBayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
 from sklearn import linear_model
 
-class Data:
+from construct_graph import Ndata
 
-	def initialize_indexes(self):
 
-		self.pagePopularityIdx = 0
-		self.pageCheckinsIdx = 1
-		self.pageTalkingAbtIdx = 2
-		self.pageCategoryIdx = 3
-		self.cc1Idx = 29
-		self.cc2Idx = 30
-		self.cc3Idx = 31
-		self.cc4Idx = 32
-		self.cc5Idx = 33
-		self.baseTimeIdx = 34
-		self.postLengthIdx = 35
-		self.postShareCtIdx = 36
-		self.postPromotionIdx = 37
-		self.hLocalIdx = 38
-		self.postSunIdx = 39
-		self.postMonIdx = 40
-		self.postTueIdx = 41
-		self.postWedIdx = 42
-		self.postThuIdx = 43
-		self.postFriIdx = 44
-		self.postSatIdx = 45
-		self.targetIdx = 53
+class BNetwork(Ndata):
 
 
 	def __init__(self, fname):
+		
+		Ndata.__init__(self, fname)
+		self.fname = fname
+		self.model = Structure()
+		
 
-		self.model = Sturcture()
-		self.consideredVars = [0, 1 , 2, 3, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 53]
-
-		self.NUM_VAR = 15
-		self.initialize_indexes()
-		self.root = 0
-		lst = []
-
-		for f in fname:
-			with open(f) as fil:
-
-				reader = csv.reader(fil, delimiter=',', quoting=csv.QUOTE_NONE)
-				for row in reader:
-
-					lst.append(row)
-
-		self.data = np.array(lst)
-
-		self.initialize_vars()
-#		self.model = LinearGaussianBayesianNetwork()
-
-	def initialize_vars(self):
-
-		self.pagePopularity = self.data[self.pagePopularityIdx]
-		self.pageCheckins = self.data[self.pageCheckinsIdx]
-		self.pageTalkingAbt = self.data[self.pageTalkingAbtIdx]
-		self.pageCategory = self.data[self.pageCategoryIdx]
-		self.cc1 = self.data[self.cc1Idx]
-		self.cc2 = self.data[self.cc2Idx]
-		self.cc3 = self.data[self.cc3Idx]
-		self.cc4 = self.data[self.cc4Idx]
-		self.cc5 = self.data[self.cc5Idx]
-		self.baseTime = self.data[self.baseTimeIdx]
-		self.postLength = self.data[self.postLengthIdx]
-		self.postShareCt = self.data[self.postShareCtIdx]
-		self.postPromotion = self.data[self.postPromotionIdx]
-		self.hLocal = self.data[self.hLocalIdx]
-		self.postSun = self.data[:,self.postSunIdx]
-		self.postMon = self.data[:,self.postMonIdx]
-		self.postTue = self.data[:,self.postTueIdx]
-		self.postWed = self.data[:,self.postWedIdx]
-		self.postThu = self.data[:,self.postThuIdx]
-		self.postFri = self.data[:,self.postFriIdx]
-		self.postSat = self.data[:,self.postSatIdx]
-		self.target = self.data[self.targetIdx]
-
-
-		postPubDays = np.zeros((7, len(self.postSun)))
-
-		postPubDays[0] = self.postSun
-		postPubDays[1] = self.postMon
-		postPubDays[2] = self.postTue
-		postPubDays[3] = self.postWed
-		postPubDays[4] = self.postThu
-		postPubDays[5] = self.postFri
-		postPubDays[6] = self.postSat
-		self.postDay = np.array(np.argmax(postPubDays,
-							axis=0).reshape(len(self.postSun),1),
-							dtype=np.float32)
-
-		#self.postDay = self.reduceDimension(postPubDays)
-
-		self.data[:,self.postSunIdx] = self.postDay[:,0]
-
-		completeList = []
-		for i in range(0, 54):
-			completeList.append(i)
-		trun = np.setdiff1d(completeList, self.consideredVars)
-
-		# Need to reverse as the col indexes will change on deletion of columns
-		trun = trun[::-1]
-
-		print "Filtering out variables : ", trun
-		for i in range(0, len(trun)):
-
-			self.data = np.delete(self.data, trun[i], 1)
-
-		self.dictVal = {'pagePopularity':self.pagePopularity, 'pageCheckins':self.pageCheckins, 'pageTalkingAbt':self.pageTalkingAbt, 'pageCategory':self.pageCategory, 'cc1':self.cc1, 'cc2':self.cc2, 'cc3':self.cc3, 'cc4':self.cc4, 'cc5':self.cc5, 'baseTime':self.baseTime, 'postLength':self.postLength, 'postShareCt':self.postShareCt, 'postPromotion':self.postPromotion, 'hLocal':self.hLocal, 'postDay':self.postDay, 'comments':self.target }
-		self.dictIdx = {'pagePopularity':self.pagePopularityIdx, 'pageCheckins':self.pageCheckinsIdx, 'pageTalkingAbt':self.pageTalkingAbtIdx, 'pageCategory':self.pageCategoryIdx, 'cc1':self.cc1Idx, 'cc2':self.cc2Idx, 'cc3':self.cc3Idx, 'cc4':self.cc4Idx, 'cc5':self.cc5Idx, 'baseTime':self.baseTimeIdx, 'postLength':self.postLengthIdx, 'postShareCt':self.postShareCtIdx, 'postPromotion':self.postPromotionIdx, 'hLocal':self.hLocalIdx, 'postDay':self.postDayIdx, 'comments':self.targetIdx }
-
-
-
-	def getCondProb(self, child, parents, Y):
-
-		N = len(child)
-		k = len(parents)
-		y = np.zeros((k+1))
-
-		x0 = np.ones((N + 1))
-		A = np.zeros((k+1, k+1))
-		X = np.vstack((x0,parents))
-
-		for i in range(0, len(parents)):
-			for j in range(0, len(parents)):
-
-				A[i][j] = np.dot(X[j],X[i])
-
-		print "A ",A
-
-
-		#Calculating y
-		for i in range(0, k+1):
-			y[i] = np.dot(Y, X[i])
-
-		#Calculating Beta
-
-		beta = np.dot(np.linalg.pinv(A), y)
-
-		#calculating variance
-		sum_val = 0
-		for i in range(0, k+1):
-			sum_val = sum_val + np.dot(beta[i],X[i])
-
-		sum_val = sum_val - y
-		var = pow(sum_val, 2)/N
-
-		#Now that we got all the ingredients lets calculate the conditional probabilities
-
-		logval = -1/2 * np.log(2*np.pi*var) - 1/(2*var) * pow(sum_val, 2)
-
-
-		return pow(e, logval)
-
-################################################################################
-#
-#	Setting this function up for changes according to the new Node class
-#
-################################################################################
-	def define_structure(self):
-
-		self.model.add_edge(['pageCategory','pagePopularity'],types=['d','lgandd'])
-		self.model.add_edge(['pagePopularity','pageTalkingAbt'],types=['lgandd','lg'])
-		self.model.add_edge(['pageTalkingAbout','Comments'],types=['lg','lgandd'])
-		self.model.add_edge(['postPromotion','Comments'],types=['d','lgandd'])
-		self.model.add_edge(['postLength','postShareCt'],types=['lg','lg'])
-		self.model.add_edge(['postLength','Comments'],types=['lg','lgandd'])
-		self.model.add_edge(['postShareCt','Comments'],types=['lg','lgandd'])
-		self.model.add_edge(['baseTime','cc1'],types=['lg','lg'])
-		self.model.add_edge(['baseDay','cc2'],types=['d','lgandd'])
-		self.model.add_edge(['cc1','cc2'],types=['lg','lgandd'])
-		self.model.add_edge(['cc2','cc3'],types=['lgandd','lg'])
-		self.model.add_edge(['cc3','Comments'],types=['lg','lgandd'])
-		self.model.add_edge(['pageCheckins','Comments'],types=['lg','lgandd'])
-		self.model.add_edge(['postDay','cc4'],types=['d','lgandd'])
-		self.model.add_edge(['cc4','Comments'],types=['lgandd','lgandd'])
-
-"""
-		self.model.add_edges_from([('pageCategory','pagePopularity'),('pagePopularity', 'pageTalkingAbt')])
-		self.model.add_edge('pageTalkingAbt', 'Comments')
-		self.model.add_edge('postPromotion','Comments')
-		self.model.add_edge('postLength', 'Comments')
-		self.model.add_edges_from([('postLength', 'postShareCt'), ('postShareCt','Comments')])
-		self.model.add_edges_from([('baseDay','cc2'),('cc2', 'cc3')])
-		self.model.add_edge('cc3', 'Comments')
-		self.model.add_edge('pageCheckins','Comments')
-		self.model.add_edges_from([('baseTime','cc1'), ('cc1', 'cc2')])
-		self.model.add_edges_from([('postDay','cc4'),('cc4', 'Comments')])
-		self.model.add_edge('hLocal','Comments')
-"""
-
-
-	def infer(self):
-		#infr = Mplp(self.model)
-		f = open('query.txt', 'r')
-		lines = f.readlines()
-		for i in lines:
-			lst = i.split(",")
-			queryType = lst[0]
-			if(queryType == 0):
-				child = lst[1]
-				parents = lst[2:]
-
-			#print infr.query(child, parents)
-
-		#TODO: Add handling of multiple types of queries defined in query file
-
-
-
-class Node(Data):
-
-	def __init__(self,nodeName,parents = [],continuous = False):
+	
+	def sdalinit__(self,nodeName,parents = [],continuous = False):
 		"""
 		Parameters
 		----------
@@ -393,6 +200,75 @@ class Node(Data):
 
 		"""
 		return self.nodeName
+		
+	def define_structure(self):
+
+		self.model.add_edge(['pageCategory','pagePopularity'],types=['d','lgandd'])
+		self.model.add_edge(['pagePopularity','pageTalkingAbout'],types=['lgandd','lg'])
+		self.model.add_edge(['pageTalkingAbout','Comments'],types=['lg','lgandd'])
+		self.model.add_edge(['postPromotion','Comments'],types=['d','lgandd'])
+		self.model.add_edge(['postLength','postShareCt'],types=['lg','lg'])
+		self.model.add_edge(['postLength','Comments'],types=['lg','lgandd'])
+		self.model.add_edge(['postShareCt','Comments'],types=['lg','lgandd'])
+		self.model.add_edge(['baseTime','cc1'],types=['lg','lg'])
+		self.model.add_edge(['baseDay','cc2'],types=['d','lgandd'])
+		self.model.add_edge(['cc1','cc2'],types=['lg','lgandd'])
+		self.model.add_edge(['cc2','cc3'],types=['lgandd','lg'])
+		self.model.add_edge(['cc3','Comments'],types=['lg','lgandd'])
+		self.model.add_edge(['pageCheckins','Comments'],types=['lg','lgandd'])
+		self.model.add_edge(['postDay','cc4'],types=['d','lgandd'])
+		self.model.add_edge(['cc4','Comments'],types=['lgandd','lgandd'])
+
+
+		#g = self.ndata#Ndata(self.fname)
+		
+		#print self.model.get_parents("pagePopularity")
+		
+		DISCRETE = "d"
+		LINEARGAUSSIAN = "lg"
+		LGANDDISCRETE = "lgandd"
+		
+		#print self.get_value("pageCategory", DISCRETE)
+		
+		dat = {"pageCategory": self.get_value("pageCategory", DISCRETE), 
+		"pagePopularity": self.get_value("pagePopularity", LGANDDISCRETE), 
+		"pageTalkingAbout": self.get_value("pageTalkingAbout", LINEARGAUSSIAN), 
+		"postPromotion": self.get_value("postPromotion", LINEARGAUSSIAN),
+		"postLength": self.get_value("postLength", LINEARGAUSSIAN),
+		"postShareCt": self.get_value("postShareCt", LINEARGAUSSIAN),
+		"baseDay": self.get_value("baseDay", DISCRETE),
+		"cc1": self.get_value("cc1", LINEARGAUSSIAN),
+		"cc2": self.get_value("cc2", LGANDDISCRETE),
+		"cc3": self.get_value("cc3", LINEARGAUSSIAN),
+		"postDay": self.get_value("postDay", DISCRETE),
+		"pageCheckins": self.get_value("pageCheckins", LINEARGAUSSIAN),
+		"cc4": self.get_value("cc4", LGANDDISCRETE),
+		"Comments": self.get_value("Comments", LINEARGAUSSIAN),
+		}
+		
+		
+		node_data = {"Vdata": dat}
+		
+		print "dict: ",node_data
+		
+	
+	def infer(self):
+		#infr = Mplp(self.model)
+		f = open('query.txt', 'r')
+		lines = f.readlines()
+		for i in lines:
+			lst = i.split(",")
+			queryType = lst[0]
+			if(queryType == 0):
+				child = lst[1]
+				parents = lst[2:]
+
+			#print infr.query(child, parents)
+
+		#TODO: Add handling of multiple types of queries defined in query file
+
+		
+		
 
 if __name__=="__main__":
 
@@ -403,15 +279,12 @@ if __name__=="__main__":
 
 			fname.append(dirname + files)
 
-	ob = Data(fname)
-	ob.define_structure()
+	#ob = Data(fname)
+	bn = BNetwork(fname)
+	bn.define_structure()
 
-	dat = pd.DataFrame(ob.data, columns = ['pagePopularity', 'pageCheckins', 'pageTalkingAbt',  'pageCategory', 'cc1', 'cc2', 'cc3', 'cc4', 'cc5','baseTime', 'postLength','postShareCt', 'postPromotion', 'hLocal', 'postDay' , 'Comments'])
-	#ob.model.fit(dat)
-	ob.infer()
-
-
-	"""
-	lr = LinearReg(fname)
-	print lr.linear_reg(ob.pagePopularity, postLength)
-	"""
+	#dat = pd.DataFrame(ob.data, columns = ['pagePopularity', 'pageCheckins', 'pageTalkingAbt',  'pageCategory', 'cc1', 'cc2', 'cc3', 'cc4', 'cc5','baseTime', 'postLength','postShareCt', 'postPromotion', 'hLocal', 'postDay' , 'Comments'])
+	
+	bn.infer()
+	
+	
