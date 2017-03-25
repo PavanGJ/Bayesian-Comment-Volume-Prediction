@@ -12,36 +12,40 @@
 #	22-Mar-2017		Anurag Dixit	Added Linear Regression Code for adding cpds for continuos variables
 #	24-Mar-2017     Anurag Dixit    Changes done for hybrid bayesian network model compatible data generation
 #	24-Mar-2017     Anurag Dixit	Changes for Linear Regression intercept
+#	24-Mar-2017		Pavan Joshi		Adding API to Create a Hybrid Bayesian Network using libpgm
 #
 ################################################################################
 import os
 import csv
+import json
 import numpy as np
 import pandas as pd
 
-from Structure import Structure
-from Data import Data
-from pgmpy.models import BayesianModel
+"""from pgmpy.models import BayesianModel
 from pgmpy.inference import Mplp
 from pgmpy.factors.continuous import LinearGaussianCPD
 from pgmpy.models import LinearGaussianBayesianNetwork
-from pgmpy.factors.discrete import TabularCPD
+from pgmpy.factors.discrete import TabularCPD"""
+from libpgm.hybayesiannetwork import HyBayesianNetwork
+from libpgm.nodedata import NodeData
+from libpgm.graphskeleton import GraphSkeleton
 from sklearn import linear_model
 
 from construct_graph import Ndata
+from Structure import Structure
+from Data import Data
 
 
 class BNetwork(Ndata):
 
 
 	def __init__(self, fname):
-		
+
 		Ndata.__init__(self, fname)
 		self.fname = fname
 		self.model = Structure()
-		
 
-	
+
 	def sdalinit__(self,nodeName,parents = [],continuous = False):
 		"""
 		Parameters
@@ -200,7 +204,7 @@ class BNetwork(Ndata):
 
 		"""
 		return self.nodeName
-		
+
 	def define_structure(self):
 
 		print "Constructing the Hybrid Bayesian Network Model graph ... "
@@ -221,18 +225,21 @@ class BNetwork(Ndata):
 		self.model.add_edge(['postDay','cc4'],types=['d','lgandd'])
 		self.model.add_edge(['cc4','Comments'],types=['lgandd','lgandd'])
 
+		with open("structure.json","wb") as json_file:
+			json_file.write(self.model.get_structure())
 
-		
+
+
 		DISCRETE = "d"
 		LINEARGAUSSIAN = "lg"
 		LGANDDISCRETE = "lgandd"
-		
-		
+
+
 		print "Calculating CPDs compatible to Hybrid Bayesian Network Model for Hybrid Data ... "
-		
-		dat = {"pageCategory": self.get_value("pageCategory", DISCRETE), 
-		"pagePopularity": self.get_value("pagePopularity", LGANDDISCRETE), 
-		"pageTalkingAbout": self.get_value("pageTalkingAbout", LINEARGAUSSIAN), 
+
+		dat = {"pageCategory": self.get_value("pageCategory", DISCRETE),
+		"pagePopularity": self.get_value("pagePopularity", LGANDDISCRETE),
+		"pageTalkingAbout": self.get_value("pageTalkingAbout", LINEARGAUSSIAN),
 		"postPromotion": self.get_value("postPromotion", LINEARGAUSSIAN),
 		"postLength": self.get_value("postLength", LINEARGAUSSIAN),
 		"postShareCt": self.get_value("postShareCt", LINEARGAUSSIAN),
@@ -245,15 +252,13 @@ class BNetwork(Ndata):
 		"cc4": self.get_value("cc4", LGANDDISCRETE),
 		"Comments": self.get_value("Comments", LINEARGAUSSIAN),
 		}
-		
-		
-		node_data = {"Vdata": dat}
-		
-		
-		
-		print "Data : ",node_data
-		
-	
+
+
+		self.node_data = {"Vdata": dat}
+		with open("nodedata.json","wb") as json_file:
+			json_file.write(json.dumps(self.node_data, indent=2))
+
+
 	def infer(self):
 		#infr = Mplp(self.model)
 		f = open('query.txt', 'r')
@@ -269,8 +274,17 @@ class BNetwork(Ndata):
 
 		#TODO: Add handling of multiple types of queries defined in query file
 
-		
-		
+	def create_network(self):
+		skeleton = GraphSkeleton()
+		skeleton.load("structure.json")
+		ndata = NodeData()
+		ndata.load("nodedata.json")
+		skeleton.toporder()
+		ndata.entriestoinstances()
+
+		self.bayesian_network = HyBayesianNetwork(skeleton,ndata)
+		result = self.bayesian_network.randomsample(100)
+		print json.dumps(result, indent=2)
 
 if __name__=="__main__":
 
@@ -284,9 +298,7 @@ if __name__=="__main__":
 	#ob = Data(fname)
 	bn = BNetwork(fname)
 	bn.define_structure()
-
+	bn.create_network()
 	#dat = pd.DataFrame(ob.data, columns = ['pagePopularity', 'pageCheckins', 'pageTalkingAbt',  'pageCategory', 'cc1', 'cc2', 'cc3', 'cc4', 'cc5','baseTime', 'postLength','postShareCt', 'postPromotion', 'hLocal', 'postDay' , 'Comments'])
-	
+
 	bn.infer()
-	
-	
