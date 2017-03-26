@@ -1,3 +1,15 @@
 1, postLength, Comments
 1, pageTalkingAbt, Comments
 
+qtype, node, evidences = []
+
+
+qtype = "conditional", nodeas_a_evidence
+local_indepencies, 
+
+
+
+I, null
+CP, postLength = value, evidence = [list]
+M, postLength = 1
+
