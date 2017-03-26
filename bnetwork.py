@@ -13,7 +13,7 @@
 #	24-Mar-2017     Anurag Dixit    Changes done for hybrid bayesian network model compatible data generation
 #	24-Mar-2017     Anurag Dixit	Changes for Linear Regression intercept
 #	24-Mar-2017		Pavan Joshi		Adding API to Create a Hybrid Bayesian Network using libpgm
-#
+#	25-Mar-2017     Anurag Dixit	Added API for calculation of entropy and KL Divergence
 ################################################################################
 import os
 import csv
@@ -34,7 +34,7 @@ from sklearn import linear_model
 from construct_graph import Ndata
 from Structure import Structure
 from Data import Data
-
+import scipy.stats
 
 class BNetwork(Ndata):
 
@@ -274,6 +274,16 @@ class BNetwork(Ndata):
 			#print infr.query(child, parents)
 
 		#TODO: Add handling of multiple types of queries defined in query file
+
+	def metric(self, a, b):
+
+		#Make sure the input parameters are probability Distributions
+
+		entropy = scipy.stats.entropy(a)
+		kl_divergence = scipy.stats.entropy(a, b)
+		return entropy, kl_divergence
+
+
 
 	def create_network(self):
 		skeleton = GraphSkeleton()
