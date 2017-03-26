@@ -8,6 +8,7 @@ from __future__ import division
 #	24-Mar-2017			Anurag Dixit	Bug fix (mean_scale for Comments)
 #	24-Mar-2017			Pavan Joshi		Minor Bug fix to overcome indexing problems in some systems
 #	25-Mar-2017			Pavan Joshi		Minor fixes to overcome bugs when serializing numpy array and values
+#	25-Mar-2017			Pavan Joshi		Bug fixes for creation of dictionary that affected further processing
 #
 #
 ############################################################################################################
@@ -72,8 +73,8 @@ class Ndata(Data):
 				a = np.array(filter_val).astype(np.float)
 
 				mean_base.append(float(np.mean(a)))
-				vals.append("[%s]" % float(i))
-				mean_scale.append(1)
+				vals.append("['%s']" % float(i))
+				mean_scale.append([1])
 				variance.append(float(np.var(a)))
 
 
@@ -91,8 +92,6 @@ class Ndata(Data):
 
 		elif(val_type == "d"):
 
-			if parents==None:
-				parents = 'null'
 			values = np.unique(node_val)
 			count = len(values)
 			total = len(self.data[:,0])
@@ -107,14 +106,14 @@ class Ndata(Data):
 
 		else:   #linear gaussian types
 			mean_scal = []
-			mean_base = []
+			mean_base = None
 
 			node_val = node_val.reshape(len(node_val), 1).astype(np.float)
-
+			variance = float(np.var(node_val))
 			if(parents == None):
-				mean_base.append(np.mean(node_val).tolist())
-				mean_scal.append(1)
-				parents = 'null'
+				mean_base = np.mean(node_val)
+				#mean_scal.append(1)
+
 
 			else:
 
@@ -129,8 +128,8 @@ class Ndata(Data):
 				w, beta_0 = self.linear_regr(node_val, parent)
 
 				mean_base = beta_0.tolist()[0]
-				mean_scal = [x for x in w.tolist()]
+				mean_scal = [y for x in w.tolist() for y in x]
 
-			ret = {"type":val_type, "parents":parents, "children":children, "mean_base": mean_base, "mean_scal":[x for x in mean_scal]}
+			ret = {"type":val_type, "parents":parents, "children":children, "mean_base": mean_base, "mean_scal":[x for x in mean_scal], "variance": variance}
 
 			return ret

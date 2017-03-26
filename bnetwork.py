@@ -21,14 +21,10 @@ import json
 import numpy as np
 import pandas as pd
 
-"""from pgmpy.models import BayesianModel
-from pgmpy.inference import Mplp
-from pgmpy.factors.continuous import LinearGaussianCPD
-from pgmpy.models import LinearGaussianBayesianNetwork
-from pgmpy.factors.discrete import TabularCPD"""
 from libpgm.hybayesiannetwork import HyBayesianNetwork
 from libpgm.nodedata import NodeData
 from libpgm.graphskeleton import GraphSkeleton
+from libpgm.sampleaggregator import SampleAggregator
 from sklearn import linear_model
 
 from construct_graph import Ndata
@@ -255,7 +251,7 @@ class BNetwork(Ndata):
 
 
 		self.node_data = {"Vdata": dat}
-		print self.node_data
+
 		with open("nodedata.json","wb") as json_file:
 			json_file.write(json.dumps(self.node_data, indent=2))
 
