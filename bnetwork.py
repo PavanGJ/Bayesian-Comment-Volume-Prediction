@@ -216,7 +216,7 @@ class BNetwork(Ndata):
 		self.model.add_edge(['postLength','postShareCt'],types=['lg','lg'])
 		self.model.add_edge(['postLength','Comments'],types=['lg','lgandd'])
 		self.model.add_edge(['postShareCt','Comments'],types=['lg','lgandd'])
-		self.model.add_edge(['baseTime','cc1'],types=['lg','lg'])
+		#self.model.add_edge(['baseTime','cc1'],types=['lg','lg'])
 		self.model.add_edge(['baseDay','cc2'],types=['d','lgandd'])
 		self.model.add_edge(['cc1','cc2'],types=['lg','lgandd'])
 		self.model.add_edge(['cc2','cc3'],types=['lgandd','lg'])
@@ -255,6 +255,7 @@ class BNetwork(Ndata):
 
 
 		self.node_data = {"Vdata": dat}
+		print self.node_data
 		with open("nodedata.json","wb") as json_file:
 			json_file.write(json.dumps(self.node_data, indent=2))
 

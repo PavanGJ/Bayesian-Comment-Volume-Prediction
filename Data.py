@@ -4,6 +4,7 @@
 #	Date			Name	 		Description
 #	24-Mar-2017		Anurag Dixit	Added the file for multiple inheritance across multiple classes
 #	24-Mar-2017 	Anurag Dixit	Changes for logs
+#	24-Mar-2017		Anurag Dixit	Bug fixes which affected column index numbers
 #
 #
 ########################################################################################################
@@ -34,7 +35,7 @@ class Data:
 		self.postShareCtIdx = 36
 		self.postPromotionIdx = 37
 		self.hLocalIdx = 38
-		
+
 		self.postDayIdx = 39
 		self.postSunIdx = 39
 		self.postMonIdx = 40
@@ -43,9 +44,9 @@ class Data:
 		self.postThuIdx = 43
 		self.postFriIdx = 44
 		self.postSatIdx = 45
-		
+
 		self.baseDayIdx = 46
-		
+
 		self.baseSunIdx = 46
 		self.baseMonIdx = 47
 		self.baseTueIdx = 48
@@ -53,7 +54,7 @@ class Data:
 		self.baseThuIdx = 50
 		self.baseFriIdx = 51
 		self.baseSatIdx = 52
-		
+
 		self.targetIdx = 53
 
 
@@ -95,7 +96,7 @@ class Data:
 		self.postLength = self.data[:,self.postLengthIdx]
 		self.postShareCt = self.data[:,self.postShareCtIdx]
 		self.postPromotion = self.data[:,self.postPromotionIdx]
-		
+
 		self.hLocal = self.data[:,self.hLocalIdx]
 		self.postSun = self.data[:,self.postSunIdx]
 		self.postMon = self.data[:,self.postMonIdx]
@@ -104,8 +105,8 @@ class Data:
 		self.postThu = self.data[:,self.postThuIdx]
 		self.postFri = self.data[:,self.postFriIdx]
 		self.postSat = self.data[:,self.postSatIdx]
-		
-		
+
+
 		self.baseSun = self.data[:,self.baseSunIdx]
 		self.baseMon = self.data[:,self.baseMonIdx]
 		self.baseTue = self.data[:,self.baseTueIdx]
@@ -113,12 +114,12 @@ class Data:
 		self.baseThu = self.data[:,self.baseThuIdx]
 		self.baseFri = self.data[:,self.baseFriIdx]
 		self.baseSat = self.data[:,self.baseSatIdx]
-		
-		
-		
+
+
+
 		self.target = self.data[:,self.targetIdx]
-		
-		
+
+
 
 
 		postPubDays = np.zeros((7, len(self.postSun)))
@@ -143,7 +144,7 @@ class Data:
 		baseDays[4] = self.baseThu
 		baseDays[5] = self.baseFri
 		baseDays[6] = self.baseSat
-		
+
 		self.baseDay = np.array(np.argmax(baseDays,
 							axis=0).reshape(len(self.baseSun),1),
 							dtype=np.float32)
@@ -152,6 +153,7 @@ class Data:
 		#self.postDay = self.reduceDimension(postPubDays)
 
 		self.data[:,self.postSunIdx] = self.postDay[:,0]
+		self.data[:,self.baseSunIdx] = self.baseDay[:,0]
 
 		completeList = []
 		for i in range(0, 54):
@@ -168,13 +170,11 @@ class Data:
 			self.data = np.delete(self.data, trun[i], 1)
 
 
-		keys = ['pagePopularity', 'pageCheckins','pageTalkingAbout','pageCategory','cc1','cc2','cc3','cc4','baseTime','postLength','postShareCt','postPromotion','hLocal','postDay','baseDay','Comments']
+		keys = ['pagePopularity', 'pageCheckins','pageTalkingAbout','pageCategory','cc1','cc2','cc3','cc4','cc5','baseTime','postLength','postShareCt','postPromotion','hLocal','postDay','baseDay','Comments']
 		idx = range(len(keys))
 		self.dictVal = {'pagePopularity':self.pagePopularity, 'pageCheckins':self.pageCheckins, 'pageTalkingAbout':self.pageTalkingAbt, 'pageCategory':self.pageCategory, 'cc1':self.cc1, 'cc2':self.cc2, 'cc3':self.cc3, 'cc4':self.cc4, 'cc5':self.cc5, 'baseTime':self.baseTime, 'postLength':self.postLength, 'postShareCt':self.postShareCt, 'postPromotion':self.postPromotion, 'hLocal':self.hLocal, 'postDay':self.postDay, 'baseDay':self.baseDay ,'Comments':self.target }
 		#self.dictIdx = {'pagePopularity':self.pagePopularityIdx, 'pageCheckins':self.pageCheckinsIdx, 'pageTalkingAbout':self.pageTalkingAbtIdx, 'pageCategory':self.pageCategoryIdx, 'cc1':self.cc1Idx, 'cc2':self.cc2Idx, 'cc3':self.cc3Idx, 'cc4':self.cc4Idx, 'cc5':self.cc5Idx, 'baseTime':self.baseTimeIdx, 'postLength':self.postLengthIdx, 'postShareCt':self.postShareCtIdx, 'postPromotion':self.postPromotionIdx, 'hLocal':self.hLocalIdx, 'postDay':self.postDayIdx, 'baseDay': self.baseDayIdx, 'Comments':self.targetIdx }
 		self.dictIdx = dict(zip(keys, idx))
-		
-
 
 	def getCondProb(self, child, parents, Y):
 
@@ -216,12 +216,3 @@ class Data:
 
 
 		return pow(e, logval)
-
-################################################################################
-#
-#	Setting this function up for changes according to the new Node class
-#
-################################################################################
-	
-
-	

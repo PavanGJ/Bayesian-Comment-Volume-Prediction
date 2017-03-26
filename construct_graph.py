@@ -7,6 +7,7 @@ from __future__ import division
 #	24-Mar-2017			Anurag Dixit	Added the file for creating the data for hybridBayesianNetwork Model
 #	24-Mar-2017			Anurag Dixit	Bug fix (mean_scale for Comments)
 #	24-Mar-2017			Pavan Joshi		Minor Bug fix to overcome indexing problems in some systems
+#	25-Mar-2017			Pavan Joshi		Minor fixes to overcome bugs when serializing numpy array and values
 #
 #
 ############################################################################################################
@@ -70,10 +71,10 @@ class Ndata(Data):
 
 				a = np.array(filter_val).astype(np.float)
 
-				mean_base.append(np.mean(a))
-				vals.append("[%s]" % i)
+				mean_base.append(float(np.mean(a)))
+				vals.append("[%s]" % float(i))
 				mean_scale.append(1)
-				variance.append(np.var(a))
+				variance.append(float(np.var(a)))
 
 
 			d = {}
@@ -101,7 +102,7 @@ class Ndata(Data):
 				filter_val = np.array(self.data[np.array(self.data[:, var_index],dtype=np.float)==float(i)])
 				prob.append(len(filter_val)/total)
 
-			ret = {"type": "discrete","parents": parents, "children": children, "numoutcomes": count, "cprob": [x for x in prob], "vals":[x for x in values]}
+			ret = {"type": "discrete","parents": parents, "children": children, "numoutcomes": float(count), "cprob": [float(x) for x in prob], "vals":[float(x) for x in values]}
 			return ret
 
 		else:   #linear gaussian types
