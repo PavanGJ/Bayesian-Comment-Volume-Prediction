@@ -14,6 +14,8 @@
 #	24-Mar-2017     Anurag Dixit	Changes for Linear Regression intercept
 #	24-Mar-2017		Pavan Joshi		Adding API to Create a Hybrid Bayesian Network using libpgm
 #	25-Mar-2017     Anurag Dixit	Added API for calculation of entropy and KL Divergence
+#	26-Mar-2017 	Pavan Joshi		
+#
 ################################################################################
 import os
 import csv
@@ -291,7 +293,7 @@ class BNetwork(Ndata):
 
 		self.bayesian_network = HyBayesianNetwork(skeleton,ndata)
 		result = self.bayesian_network.randomsample(100)
-		print json.dumps(result, indent=2)
+
 
 if __name__=="__main__":
 

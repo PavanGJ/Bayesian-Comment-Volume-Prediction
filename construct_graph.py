@@ -8,8 +8,8 @@ from __future__ import division
 #	24-Mar-2017			Anurag Dixit	Bug fix (mean_scale for Comments)
 #	24-Mar-2017			Pavan Joshi		Minor Bug fix to overcome indexing problems in some systems
 #	25-Mar-2017			Pavan Joshi		Minor fixes to overcome bugs when serializing numpy array and values
-#	25-Mar-2017			Pavan Joshi		Bug fixes for creation of dictionary that affected further processing
-#
+#	26-Mar-2017			Pavan Joshi		Bug fixes for creation of dictionary that affected further processing
+#	26-Mar-2017			Pavan Joshi		Added functionality to handle continuous parents for hybrid nodes
 #
 ############################################################################################################
 
@@ -47,11 +47,13 @@ class Ndata(Data):
 		if(val_type == "lgandd"):
 
 			discrete_parents = []
+			non_discrete = []
 			for i in parents:
 				#print i,"type",st.get_vertex_type(i)
 				if(st.get_vertex_type(i) == "d"):
 					discrete_parents.append(i)
-
+				else:
+					non_discrete.append(i)
 
 
 			print "Discrete parents", discrete_parents
@@ -71,10 +73,24 @@ class Ndata(Data):
 				filter_val = self.data[:, var_index][np.array(self.data[:, disc_index],dtype=np.float) == i]
 
 				a = np.array(filter_val).astype(np.float)
+				if len(non_discrete)==0:
+					mean_base.append(float(np.mean(a)))
+					mean_scale.append([])
+				else:
+					v = self.dictVal[non_discrete[0]]
+					v = v[np.array(self.data[:, disc_index],dtype=np.float) == i]
+					parent = v.reshape(len(v),1)
 
-				mean_base.append(float(np.mean(a)))
+					for i in range(1, len(non_discrete)):
+						val = self.dictVal[non_discrete[i]][np.array(self.data[:, disc_index],dtype=np.float) == i]
+						parent = np.concatenate((parent, val.reshape(len(val), 1)), axis=1).astype(np.float)
+
+					node_val = filter_val.reshape(len(filter_val), 1).astype(np.float)
+					w, beta_0 = self.linear_regr(node_val, parent)
+
+					mean_base.append(beta_0.tolist()[0])
+					mean_scale.append([y for x in w.tolist() for y in x])
 				vals.append("['%s']" % float(i))
-				mean_scale.append([1])
 				variance.append(float(np.var(a)))
 
 
