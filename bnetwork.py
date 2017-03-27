@@ -22,7 +22,7 @@ import os
 import csv
 import json
 import numpy as np
-import pandas as pd
+
 
 from pgmpy.models import BayesianModel
 from libpgm.hybayesiannetwork import HyBayesianNetwork
@@ -198,7 +198,6 @@ class BNetwork(Ndata):
 		samples = np.array(aggregate.keys(),dtype=np.float)
 		samplepdf = scipy.stats.norm(np.mean(samples),np.var(samples))
 		origin_data = np.array(self.target,dtype=np.float)
-		print origin_data
 		originalpdf = scipy.stats.norm(np.mean(origin_data),np.var(origin_data))
 		query_domain = np.linspace(np.mean(origin_data) - np.var(origin_data),
 		 						np.mean(origin_data) + np.var(origin_data), 100)
