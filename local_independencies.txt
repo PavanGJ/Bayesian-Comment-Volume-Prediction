@@ -1,0 +1,4 @@
+(Comments _|_ baseDay, pageCategory, pagePopularity, cc2, cc1, postDay | postLength, postPromotion, cc4, pageCheckins, postShareCt, pageTalkingAbout, cc3)
+(postLength _|_ postPromotion, pageCategory, cc1, cc3, cc2, cc4, baseDay, pagePopularity, postDay, pageTalkingAbout, pageCheckins)
+(pageTalkingAbout _|_ postLength, postPromotion, cc4, cc1, cc3, cc2, pageCategory, baseDay, postShareCt, postDay, pageCheckins | pagePopularity)
+(pageCategory _|_ postLength, postPromotion, cc4, cc1, cc3, cc2, pageCheckins, baseDay, postShareCt, postDay)

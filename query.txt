@@ -1,4 +1,4 @@
 I, null
-LI, [Comments & postLength]
+LI, [Comments & postLength & pageTalkingAbout & pageCategory]
 M, postDay = 5
 CP, Comments = 100, evidence -> [postLength = 25]
