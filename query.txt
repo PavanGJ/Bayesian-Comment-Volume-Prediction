@@ -1,15 +1,4 @@
-1, postLength, Comments
-1, pageTalkingAbt, Comments
-
-qtype, node, evidences = []
-
-
-qtype = "conditional", nodeas_a_evidence
-local_indepencies, 
-
-
-
 I, null
-CP, postLength = value, evidence = [list]
-M, postLength = 1
-
+LI, [Comments & postLength]
+M, postDay = 5
+CP, Comments = 100, evidence -> [postLength = 25]
