@@ -2,3 +2,5 @@ I, null
 LI, [Comments & postLength & pageTalkingAbout & pageCategory]
 M, postDay = 5
 CP, Comments = 100, evidence -> [postLength = 25]
+M, pageCategory = 24
+CP, pageCategory = 4, evidence -> [postShareCt = 116]

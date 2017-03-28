@@ -175,7 +175,7 @@ class BNetwork(Ndata):
 
 		#Make sure the input parameters are probability Distributions
 
-		entropy = scipy.stats.entropy(a,base=10)
+		entropy = scipy.stats.entropy(a)
 		kl_divergence = scipy.stats.entropy(a, b)
 		return entropy, kl_divergence
 
@@ -202,7 +202,8 @@ class BNetwork(Ndata):
 		query_domain = np.linspace(np.mean(origin_data) - np.var(origin_data),
 		 						np.mean(origin_data) + np.var(origin_data), 100)
 		entropy, kl_divergence = self.metric(samplepdf.pdf(query_domain),originalpdf.pdf(query_domain))
-		print "\n\n##########    Evaluation Metrics    ##########\n"
+		print "\n\n##########    Performance Evaluation Metrics    ##########\n"
+		print "Mean:",samplepdf.mean()
 		print "Entropy:",entropy
 		print "KL Divergence:",kl_divergence
 
