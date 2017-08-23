@@ -2,19 +2,19 @@
 #
 #	Date 			Name			Description
 #
-#	01-Mar-2017     Anurag Dixit	Initial Draft
-#	19-Mar-2017		Anurag Dixit	Added API for conditional probabilities
-#	20-Mar-2017  	Anurag Dixit	Bug fix for parsing of data correctly
-#	20-Mar-2017		Anurag Dixit	Added changes for Bayesian Model incorporation and Data
-#	20-Mar-2017		Anurag Dixit	Added file read for query perform and commented the MPLP
+#	01-Mar-2017     	Anurag Dixit		Initial Draft
+#	19-Mar-2017		Anurag Dixit		Added API for conditional probabilities
+#	20-Mar-2017  		Anurag Dixit		Bug fix for parsing of data correctly
+#	20-Mar-2017		Anurag Dixit		Added changes for Bayesian Model incorporation and Data
+#	20-Mar-2017		Anurag Dixit		Added file read for query perform and commented the MPLP
 #	21-Mar-2017		Pavan Joshi		Depreciated reduceDimensions function to utilize numpy functions
 #	21-Mar-2017		Pavan Joshi		Added API to handle nodes in the network.
-#	22-Mar-2017		Anurag Dixit	Added Linear Regression Code for adding cpds for continuos variables
-#	24-Mar-2017     Anurag Dixit    Changes done for hybrid bayesian network model compatible data generation
-#	24-Mar-2017     Anurag Dixit	Changes for Linear Regression intercept
+#	22-Mar-2017		Anurag Dixit		Added Linear Regression Code for adding cpds for continuos variables
+#	24-Mar-2017     	Anurag Dixit    	Changes done for hybrid bayesian network model compatible data generation
+#	24-Mar-2017     	Anurag Dixit		Changes for Linear Regression intercept
 #	24-Mar-2017		Pavan Joshi		Adding API to Create a Hybrid Bayesian Network using libpgm
-#	25-Mar-2017     Anurag Dixit	Added API for calculation of entropy and KL Divergence
-#	26-Mar-2017 	Pavan Joshi		Added API to get independencies in the model
+#	25-Mar-2017     	Anurag Dixit		Added API for calculation of entropy and KL Divergence
+#	26-Mar-2017 		Pavan Joshi		Added API to get independencies in the model
 #	27-Mar-2017		Pavan Joshi		Added API to handle inference queries and evaluation metrics
 #
 ################################################################################
