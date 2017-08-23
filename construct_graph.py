@@ -4,8 +4,8 @@ from __future__ import division
 #
 #
 #	Date 				Name	 		Description
-#	24-Mar-2017			Anurag Dixit	Added the file for creating the data for hybridBayesianNetwork Model
-#	24-Mar-2017			Anurag Dixit	Bug fix (mean_scale for Comments)
+#	24-Mar-2017			Anurag Dixit		Added the file for creating the data for hybridBayesianNetwork Model
+#	24-Mar-2017			Anurag Dixit		Bug fix (mean_scale for Comments)
 #	24-Mar-2017			Pavan Joshi		Minor Bug fix to overcome indexing problems in some systems
 #	25-Mar-2017			Pavan Joshi		Minor fixes to overcome bugs when serializing numpy array and values
 #	26-Mar-2017			Pavan Joshi		Bug fixes for creation of dictionary that affected further processing
