@@ -2,9 +2,9 @@
 #
 #
 #	Date			Name	 		Description
-#	24-Mar-2017		Anurag Dixit	Added the file for multiple inheritance across multiple classes
-#	24-Mar-2017 	Anurag Dixit	Changes for logs
-#	24-Mar-2017		Anurag Dixit	Bug fixes which affected column index numbers
+#	24-Mar-2017		Anurag Dixit		Added the file for multiple inheritance across multiple classes
+#	24-Mar-2017 		Anurag Dixit		Changes for logs
+#	24-Mar-2017		Anurag Dixit		Bug fixes which affected column index numbers
 #
 #
 ########################################################################################################
